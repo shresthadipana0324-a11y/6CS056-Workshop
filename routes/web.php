@@ -30,7 +30,7 @@ Route::get('/student/create', function () {
 Route::post('/student', function (Request $request) {
     $validated = $request->validate([
         'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
+        'email' => 'required|email|max:255|unique:students,email',
         'phone' => 'required|string|max:20',
         'address' => 'nullable|string|max:500',
         'date_of_birth' => 'nullable|date',
@@ -38,7 +38,10 @@ Route::post('/student', function (Request $request) {
 
     $student = Student::create($validated);
 
-    return "Student {$student->name} created successfully!";
+    return redirect('/students')->with(
+        'success',
+        "Student {$student->name} created successfully!"
+    );
 });
 
 // Display all students
@@ -55,7 +58,7 @@ Route::get('/students/{id}', function ($id) {
     return view('student.show', compact('student'));
 });
 
-// Display the edit form
+// Display the student edit form
 Route::get('/students/{id}/edit', function ($id) {
     $student = Student::findOrFail($id);
 
@@ -109,6 +112,13 @@ Route::get('/courses/create', function () {
     return view('course.create');
 });
 
+// Display an individual course
+Route::get('/courses/{id}', function ($id) {
+    $course = Course::findOrFail($id);
+
+    return view('course.show', compact('course'));
+});
+
 // Display the course edit form
 Route::get('/courses/{id}/edit', function ($id) {
     $course = Course::findOrFail($id);
@@ -122,9 +132,13 @@ Route::post('/courses', function (Request $request) {
         'course_name' => 'required|string|max:255',
         'course_code' => 'required|string|max:50|unique:courses,course_code',
         'description' => 'nullable|string|max:1000',
+        'duration' => 'required|integer|min:1',
+        'fee' => 'required|numeric|min:0',
+        'difficulty' => 'required|in:Easy,Medium,Hard',
+        'is_active' => 'required|boolean',
     ]);
 
-    Course::create($validated);
+    $course = Course::create($validated);
 
     return redirect('/courses')->with(
         'success',
@@ -140,6 +154,10 @@ Route::put('/courses/{id}', function (Request $request, $id) {
         'course_name' => 'required|string|max:255',
         'course_code' => 'required|string|max:50|unique:courses,course_code,' . $course->id,
         'description' => 'nullable|string|max:1000',
+        'duration' => 'required|integer|min:1',
+        'fee' => 'required|numeric|min:0',
+        'difficulty' => 'required|in:Easy,Medium,Hard',
+        'is_active' => 'required|boolean',
     ]);
 
     $course->update($validated);

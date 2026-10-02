@@ -10,5 +10,9 @@ class Course extends Model
         'course_name',
         'course_code',
         'description',
+        'duration',
+        'fee',
+        'difficulty',
+        'is_active',
     ];
 }

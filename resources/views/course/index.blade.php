@@ -1,86 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Courses</title>
+    <title>Courses</title>
 </head>
 <body>
 
-    <h1>Registered Courses</h1>
+    <h1>Course List</h1>
 
-    {{-- Success message --}}
     @if (session('success'))
-        <p style="color: green;">
-            {{ session('success') }}
-        </p>
+        <p>{{ session('success') }}</p>
     @endif
 
-    {{-- Register new course link --}}
-    <p>
-        <a href="/courses/create">Register New Course</a>
-    </p>
+    @if ($errors->any())
+        <div>
+            @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
 
-    {{-- Display all courses --}}
-    @if ($courses->count() > 0)
+    <a href="/courses/create">Register New Course</a>
 
-        <table border="1" cellpadding="10">
-            <thead>
+    <br><br>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Course Name</th>
+                <th>Course Code</th>
+                <th>Description</th>
+                <th>Duration (Weeks)</th>
+                <th>Fee</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse ($courses as $course)
                 <tr>
-                    <th>ID</th>
-                    <th>Course Name</th>
-                    <th>Course Code</th>
-                    <th>Description</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+                    <td>{{ $course->id }}</td>
+                    <td>{{ $course->course_name }}</td>
+                    <td>{{ $course->course_code }}</td>
+                    <td>{{ $course->description ?? 'N/A' }}</td>
+                    <td>{{ $course->duration ?? 'Not set' }}</td>
+                    <td>{{ $course->fee !== null ? number_format((float) $course->fee, 2) : 'Not set' }}</td>
+                    <td>{{ $course->difficulty ?? 'Not set' }}</td>
 
-            <tbody>
-                @foreach ($courses as $course)
-                    <tr>
-                        <td>{{ $course->id }}</td>
+                    <td>
+                        @if ($course->is_active)
+                            Active
+                        @else
+                            Inactive
+                        @endif
+                    </td>
 
-                        <td>{{ $course->course_name }}</td>
+                    <td>{{ $course->created_at }}</td>
 
-                        <td>{{ $course->course_code }}</td>
+                    <td>
+                        <a href="/courses/{{ $course->id }}">View</a>
 
-                        <td>{{ $course->description ?? 'N/A' }}</td>
+                        |
 
-                        <td>{{ $course->created_at }}</td>
+                        <a href="/courses/{{ $course->id }}/edit">Edit</a>
 
-                        <td>
-                            {{-- Edit button --}}
-                            <a href="/courses/{{ $course->id }}/edit">
-                                Edit
-                            </a>
+                        |
 
-                            {{-- Delete button --}}
-                            <form
-                                action="/courses/{{ $course->id }}"
-                                method="POST"
-                                style="display: inline;"
-                                onsubmit="return confirm('Are you sure you want to delete this course?');"
+                        <form
+                            action="/courses/{{ $course->id }}"
+                            method="POST"
+                            style="display: inline;"
+                        >
+                            @csrf
+                            @method('DELETE')
+
+                            <button
+                                type="submit"
+                                onclick="return confirm('Are you sure you want to delete this course?')"
                             >
-                                @csrf
-                                @method('DELETE')
-
-                                <button type="submit">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-    @else
-        <p>No courses registered yet.</p>
-    @endif
-
-    {{-- Link to students --}}
-    <p>
-        <a href="/students">View All Students</a>
-    </p>
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="10">No courses found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
 
 </body>
 </html>
